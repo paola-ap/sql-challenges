@@ -75,8 +75,30 @@ Danny has shared with you 3 key datasets for this case study:
 
 ### 1. What is the total amount each customer spent at the restaurant?
 ```
+SELECT
+	customer_id,
+	SUM(price) AS total_sales
+FROM sales
+INNER JOIN menu USING (product_id)
+GROUP BY customer_id
+ORDER BY customer_id ASC;
 ```
-#### Result
+#### Solution
 ```
+| customer_id | total_sales |
+| ----------- | ----------- |
+| A           | 76          |
+| B           | 74          |
+| C           | 36          |
 ```
-#### Explanation
+
+This query calculates the total sales amount per customer by summing up the prices of the products each customer has purchased.
+
+**Tables Involved:**
+ * `sales`: This table contains records of each sale, including a `customer_id` and `product_id`.
+ * `menu`: This table lists products, each with a `product_id` and a corresponding `price`.
+
+**Key Operations:**
+ * **INNER JOIN** merges sales and menu tables on matching `product_id` to pair each sale with its product price.
+ * **GROUP BY** `customer_id` organizes the data into distinct groups per customer in order to calculate the total sales for each individual customer.
+ * **SUM(price)** aggregates the prices of products purchased by each customer to get their total spend.
