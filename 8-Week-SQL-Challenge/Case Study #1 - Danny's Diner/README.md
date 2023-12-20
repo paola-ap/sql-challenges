@@ -2,6 +2,12 @@
 <p align="center">
 <img src="https://user-images.githubusercontent.com/81607668/127727503-9d9e7a25-93cb-4f95-8bd0-20b87cb4b459.png" alt="Image" width="450" height="450">
 
+## Table of Contents
+- [Business Task](#business-task)
+- [Datasets](#dataset)
+- [Entity Relationship Diagram](#entity-relationship-diagram)
+- [Case Study Questions and Solutions](#case-study-questions-and-solutions)
+
 Please note that all the details pertaining to the case study have been obtained from [Data with Danny](https://8weeksqlchallenge.com/case-study-1/). 
 
 ***
