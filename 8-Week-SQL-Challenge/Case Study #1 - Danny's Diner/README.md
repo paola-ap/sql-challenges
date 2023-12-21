@@ -203,3 +203,53 @@ This query identifies the most popular product based on the number of times it h
 
 ***
 
+### 5. Which item was the most popular for each customer?
+
+```sql
+WITH product_sales AS (
+    SELECT
+        customer_id,
+        product_name,
+        COUNT(*) AS order_count
+    FROM sales
+    INNER JOIN menu USING(product_id)
+    GROUP BY customer_id, product_name
+)
+SELECT
+    customer_id,
+    product_name,
+    order_count
+FROM product_sales
+WHERE (customer_id, order_count) IN (
+    SELECT
+        customer_id,
+        MAX(order_count)
+    FROM product_sales
+    GROUP BY customer_id
+)
+ORDER BY customer_id ASC;
+```
+
+#### Query Result
+
+| customer_id | product_name | order_count |
+|-------------|--------------|-------------|
+| A           | ramen        | 3           |
+| B           | sushi        | 2           |
+| B           | curry        | 2           |
+| B           | ramen        | 2           |
+| C           | ramen        | 3           |
+
+#### Key Operations
+This query identifies each customer's most frequently ordered product along with the number of times it was ordered. It accomplishes this through a combination of a Common Table Expression (CTE), subquery, and aggregation functions.
+
+* **WITH product_sales AS**: The query begins with a CTE named `product_sales`, a temporary table that stores the number of times each customer has ordered each product.
+  * **INNER JOIN**: Merges `sales` and `menu` tables in order to link the `product_id` to the `product_name`.
+  * **COUNT(*) AS order_count**: Within this CTE, the query calculates the total number of orders (`order_count`) per product per customer using the `COUNT(*)` function.
+  * **GROUP BY customer_id, product_name**: The data is grouped by both `customer_id` and `product_name`. This step is needed for the `COUNT` function to compute the order count for each specific product for each customer.
+* **WHERE Clause with Subquery**:
+  * The core of this query lies in its WHERE clause, which uses a subquery to filter out the desired records. The subquery selects the maximum `order_count` for each `customer_id` from the `product_sales` CTE. 
+  * The use of `(customer_id, order_count) IN` with the subquery ensures that for each customer, only their most frequently ordered product is selected. This is determined by matching the `customer_id` with their highest `order_count`.
+* **ORDER BY customer_id ASC**: Finally, the results are ordered by `customer_id` in ascending order. 
+
+***
