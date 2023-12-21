@@ -80,7 +80,7 @@ SELECT
     customer_id,
     SUM(price) AS total_sales
 FROM sales
-INNER JOIN menu USING (product_id)
+INNER JOIN menu USING(product_id)
 GROUP BY customer_id
 ORDER BY customer_id ASC;
 ```
@@ -137,7 +137,7 @@ WITH product_orders AS (
       order_date,
       STRING_AGG(product_name, ', ') AS products_ordered
     FROM sales
-    INNER JOIN menu USING (product_id)
+    INNER JOIN menu USING(product_id)
     GROUP BY customer_id, order_date
 )
 -- Filter orders by earliest order date
@@ -153,7 +153,7 @@ WHERE (customer_id, order_date) IN (
     FROM product_orders
     GROUP BY customer_id
 )
-ORDER BY customer_id ASC
+ORDER BY customer_id ASC;
 ```
 #### Query Result
 
@@ -173,3 +173,33 @@ This query identifies the first set of products ordered by each customer along w
 * **WHERE** Clause with Subquery: Filters the records to only include the earliest order for each customer. This is done using a subquery that selects the minimum `order_date` for each `customer_id` from the `product_orders` CTE.
 
 ***
+
+### 4. What is the most purchased item on the menu and how many times was it purchased by all customers?
+
+```sql
+SELECT
+    product_name,
+    COUNT(*) AS purchase_count
+FROM sales
+INNER JOIN menu USING(product_id)
+GROUP BY product_name
+ORDER BY purchase_count DESC
+LIMIT 1;
+```
+#### Query Result
+
+| product_name | total_orders |
+|--------------|--------------|
+| ramen        | 8            |
+
+#### Key Operations
+This query identifies the most popular product based on the number of times it has been ordered.
+
+* **INNER JOIN**: Merges `sales` and `menu` tables in order to link the `product_id` to the `product_name`.
+* **COUNT(*)**: Counts the total number of sales for each product. The `COUNT(*)` function is applied to each group of `product_name`.
+* **GROUP BY product_name**: Groups the data by `product_name`, which is necessary for the `COUNT(*)` function to calculate the number of purchases for each product separately.
+* **ORDER BY purchase_count DESC**: Sorts the results in descending order based on the `purchase_count`.
+* **LIMIT 1**: The query limits the output to just the top row of the sorted list. Since the list is sorted by purchase count in descending order, this means the query will return only the product with the highest purchase count.
+
+***
+
