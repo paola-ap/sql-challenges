@@ -127,7 +127,7 @@ This query calculates the number of distinct visits per customer by counting the
 
 ***
 
-### 2. How many days has each customer visited the restaurant?
+### 3. How many days has each customer visited the restaurant?
 
 ```sql
 -- First aggregate products by customer and order date
@@ -168,7 +168,7 @@ This query identifies the first set of products ordered by each customer along w
 
 * **WITH product_orders**: This Common Table Expression (CTE) is used as a temporary result set for further processing. It aggregates products ordered by customers on each order date.
   * **INNER JOIN**: Pairs each sale with its respective product name.
-  * **STRING_AGG(product_name, ', ')**: Concatenates the names of products ordered into a single string, separated by commas, for each order.
+  * **STRING_AGG(product_name, ', ')**: Concatenates the names of products ordered into a single string, separated by commas, for each order. We aggregate the products because at times multiple products were purchased on the same day, and we are not provided timestamps to determine the order of the sales.
   * **GROUP BY customer_id, order_date**: Organizes the data into groups for each combination of customer and order date to facilitate aggregation of product names.
 * **WHERE** Clause with Subquery: Filters the records to only include the earliest order for each customer. This is done using a subquery that selects the minimum `order_date` for each `customer_id` from the `product_orders` CTE.
 
