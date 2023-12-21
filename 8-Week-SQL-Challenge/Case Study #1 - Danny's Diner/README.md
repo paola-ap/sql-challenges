@@ -241,7 +241,7 @@ ORDER BY customer_id ASC;
 | C           | ramen        | 3           |
 
 #### Key Operations
-This query identifies each customer's most frequently ordered product along with the number of times it was ordered. It accomplishes this through a combination of a Common Table Expression (CTE), subquery, and aggregation functions.
+This query identifies each customer's most frequently ordered product along with the number of times it was ordered. It accomplishes this through a combination of a CTE, subquery, and aggregation functions.
 
 * **WITH product_sales AS**: The query begins with a CTE named `product_sales`, a temporary table that stores the number of times each customer has ordered each product.
   * **INNER JOIN**: Merges `sales` and `menu` tables in order to link the `product_id` to the `product_name`.
@@ -251,5 +251,50 @@ This query identifies each customer's most frequently ordered product along with
   * The core of this query lies in its WHERE clause, which uses a subquery to filter out the desired records. The subquery selects the maximum `order_count` for each `customer_id` from the `product_sales` CTE. 
   * The use of `(customer_id, order_count) IN` with the subquery ensures that for each customer, only their most frequently ordered product is selected. This is determined by matching the `customer_id` with their highest `order_count`.
 * **ORDER BY customer_id ASC**: Finally, the results are ordered by `customer_id` in ascending order. 
+
+***
+
+### 6. Which item was purchased first by each customer after they became a member?
+
+```sql
+WITH member_sales AS (
+    SELECT
+        customer_id,
+        product_name,
+        order_date,
+        join_date,
+        DENSE_RANK() OVER (PARTITION BY customer_id ORDER BY order_date ASC)
+            AS order_rank
+    FROM sales
+    INNER JOIN menu USING(product_id)
+    INNER JOIN members USING(customer_id)
+    WHERE sales.order_date >= members.join_date
+)
+SELECT
+    customer_id,
+    product_name,
+    order_date,
+    join_date
+FROM member_sales
+WHERE order_rank = 1
+ORDER BY customer_id ASC;
+```
+#### Query Result
+
+| customer_id | product_name | order_date | join_date |
+|-------------|--------------|------------|-----------|
+| A           | curry        | 2021-01-07 | 2021-01-07|
+| B           | sushi        | 2021-01-11 | 2021-01-09|
+
+#### Key Operations
+This SQL query is designed to find each customer's first purchase from the time they became a member. It uses a combination of a CTE, window functions, and multiple joins.
+
+* **WITH member_sales AS**: The query begins with a CTE named `product_sales`, a temporary table that stores the orders made by customers after becoming members, ranking them by the order date for each customer.
+  * **INNER JOINs**:
+    * Joins `sales` and `menu` tables on `product_id` to link each `product_id` with the corresponding product name.
+    * Joins `sales` and `members` tables on `customer_id` to exclude non-members and associate each sale with the members’ `join_date`.
+  * **WHERE sales.order_date >= members.join_date**: Filters out sales that occurred before the customer became a member, ensuring that only purchases made during the membership period are considered.
+  * **DENSE_RANK() OVER (PARTITION BY customer_id ORDER BY order_date ASC) AS order_rank**: Assigns a rank to each food order for a customer, based on the order date, with the earliest order getting the rank 1. The `PARTITION BY` clause ensures that this ranking is done separately for each customer.
+* **WHERE order_rank = 1**: Filters the `member_sales` CTE to only include the first order (rank 1) for each customer since becoming a member.
 
 ***
