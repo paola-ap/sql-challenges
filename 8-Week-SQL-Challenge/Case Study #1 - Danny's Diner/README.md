@@ -77,8 +77,8 @@ Danny has shared with you 3 key datasets for this case study:
 
 ```sql
 SELECT
-	customer_id,
-	SUM(price) AS total_sales
+  customer_id,
+  SUM(price) AS total_sales
 FROM sales
 INNER JOIN menu USING (product_id)
 GROUP BY customer_id
@@ -95,6 +95,81 @@ ORDER BY customer_id ASC;
 #### Key Operations
 This query calculates the total sales amount per customer by summing up the prices of the products each customer has purchased.
 
- * **INNER JOIN** merges sales and menu tables on matching `product_id` to pair each sale with its product price.
- * **GROUP BY** `customer_id` organizes the data into distinct groups per customer in order to calculate the total sales for each individual customer.
- * **SUM(price)** aggregates the prices of products purchased by each customer to get their total spend.
+ * **INNER JOIN**: Merges sales and menu tables on matching `product_id` to pair each sale with its product price.
+ * **GROUP BY** `customer_id`: Organizes the data into distinct groups per customer in order to be able to calculate the total sales for each individual customer.
+ * **SUM(price)**: Aggregates the prices of products purchased by each customer to get their total spend.
+
+***
+
+### 2. How many days has each customer visited the restaurant?
+
+```sql
+SELECT
+	customer_id,
+	COUNT(DISTINCT order_date) AS customer_visits
+FROM sales
+GROUP BY customer_id
+ORDER BY customer_id ASC;
+```
+#### Query Result
+
+| customer_id | customer_visits |
+| ----------- | --------------- |
+| A           | 4               |
+| B           | 6               |
+| C           | 2               |
+
+#### Key Operations
+This query calculates the number of distinct visits per customer by counting the unique order dates associated with each customer.
+
+ * **COUNT(DISTINCT order_date)**: Aggregates the unique dates on which each customer has placed an order.
+ * **GROUP BY** `customer_id`: Organizes the data into distinct groups per customer in order to be able to calculate the number of distinct visits on a per-customer basis.
+
+***
+
+### 2. How many days has each customer visited the restaurant?
+
+```sql
+-- First aggregate products by customer and order date
+WITH product_orders AS (
+	SELECT
+		customer_id,
+		order_date,
+		STRING_AGG(product_name, ', ') AS products_ordered
+	FROM sales
+	INNER JOIN menu USING (product_id)
+	GROUP BY customer_id, order_date
+)
+-- Filter orders by earliest order date
+SELECT
+	customer_id,
+	order_date AS earliest_order_date,
+	products_ordered
+FROM product_orders
+WHERE (customer_id, order_date) IN (
+	SELECT
+		customer_id,
+		MIN(order_date)
+	FROM product_orders
+	GROUP BY customer_id
+)
+ORDER BY customer_id ASC
+```
+#### Query Result
+
+| customer_id | earliest_order_date | products_ordered |
+|-------------|---------------------|------------------|
+| A           | 2021-01-01          | sushi, curry     |
+| B           | 2021-01-01          | curry            |
+| C           | 2021-01-01          | ramen, ramen     |
+
+#### Key Operations
+This query identifies the first set of products ordered by each customer along with the date of these initial orders.
+
+* **WITH product_orders**: This Common Table Expression (CTE) is used as a temporary result set for further processing. It aggregates products ordered by customers on each order date.
+  * **INNER JOIN**: Pairs each sale with its respective product name.
+  * **STRING_AGG(product_name, ', ')**: Concatenates the names of products ordered into a single string, separated by commas, for each order.
+  * **GROUP BY customer_id, order_date**: Organizes the data into groups for each combination of customer and order date to facilitate aggregation of product names.
+* **WHERE** Clause with Subquery: Filters the records to only include the earliest order for each customer. This is done using a subquery that selects the minimum `order_date` for each `customer_id` from the `product_orders` CTE.
+
+***
