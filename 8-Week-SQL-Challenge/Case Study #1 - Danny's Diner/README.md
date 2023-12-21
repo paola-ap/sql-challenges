@@ -105,8 +105,8 @@ This query calculates the total sales amount per customer by summing up the pric
 
 ```sql
 SELECT
-	customer_id,
-	COUNT(DISTINCT order_date) AS customer_visits
+  customer_id,
+  COUNT(DISTINCT order_date) AS customer_visits
 FROM sales
 GROUP BY customer_id
 ORDER BY customer_id ASC;
@@ -132,26 +132,26 @@ This query calculates the number of distinct visits per customer by counting the
 ```sql
 -- First aggregate products by customer and order date
 WITH product_orders AS (
-	SELECT
-		customer_id,
-		order_date,
-		STRING_AGG(product_name, ', ') AS products_ordered
-	FROM sales
-	INNER JOIN menu USING (product_id)
-	GROUP BY customer_id, order_date
+  SELECT
+    customer_id,
+    order_date,
+    STRING_AGG(product_name, ', ') AS products_ordered
+  FROM sales
+  INNER JOIN menu USING (product_id)
+  GROUP BY customer_id, order_date
 )
 -- Filter orders by earliest order date
 SELECT
-	customer_id,
-	order_date AS earliest_order_date,
-	products_ordered
+  customer_id,
+  order_date AS earliest_order_date,
+  products_ordered
 FROM product_orders
 WHERE (customer_id, order_date) IN (
-	SELECT
-		customer_id,
-		MIN(order_date)
-	FROM product_orders
-	GROUP BY customer_id
+  SELECT
+    customer_id,
+    MIN(order_date)
+  FROM product_orders
+  GROUP BY customer_id
 )
 ORDER BY customer_id ASC
 ```
