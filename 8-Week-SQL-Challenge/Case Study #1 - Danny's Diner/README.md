@@ -133,9 +133,9 @@ This query calculates the number of distinct visits per customer by counting the
 -- First aggregate products by customer and order date
 WITH product_orders AS (
     SELECT
-      customer_id,
-      order_date,
-      STRING_AGG(product_name, ', ') AS products_ordered
+        customer_id,
+        order_date,
+        STRING_AGG(product_name, ', ') AS products_ordered
     FROM sales
     INNER JOIN menu USING(product_id)
     GROUP BY customer_id, order_date
@@ -148,8 +148,8 @@ SELECT
 FROM product_orders
 WHERE (customer_id, order_date) IN (
     SELECT
-      customer_id,
-      MIN(order_date)
+        customer_id,
+        MIN(order_date)
     FROM product_orders
     GROUP BY customer_id
 )
