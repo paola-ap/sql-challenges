@@ -3,12 +3,21 @@
 <img src="https://user-images.githubusercontent.com/81607668/127727503-9d9e7a25-93cb-4f95-8bd0-20b87cb4b459.png" alt="Image" width="450" height="450">
 
 ## Table of Contents
+- [Tools](#tools)
 - [Business Task](#business-task)
 - [Datasets](#datasets)
 - [Entity Relationship Diagram](#entity-relationship-diagram)
 - [Case Study Questions and Solutions](#case-study-questions-and-solutions)
 
 Please note that all the details pertaining to the case study have been obtained from [Data with Danny](https://8weeksqlchallenge.com/case-study-1/). 
+
+***
+
+## Tools
+
+| SQL Flavor | Query Tool |
+|------------|------------|
+| PostgreSQL | pgAdmin 4  |
 
 ***
 
@@ -287,7 +296,7 @@ ORDER BY customer_id ASC;
 | B           | sushi        | 2021-01-11 | 2021-01-09|
 
 #### Key Operations
-This SQL query is designed to find each customer's first purchase from the time they became a member. It uses a combination of a CTE, window functions, and multiple joins.
+This SQL query is designed to find each customer's first purchase from the time they became a member. It uses a combination of a CTE, window function, and multiple joins.
 
 * **WITH member_sales AS**: The query begins with a CTE named `product_sales`, a temporary table that stores the orders made by customers after becoming members, ranking them by the order date for each customer.
   * **INNER JOINs**:
@@ -298,3 +307,48 @@ This SQL query is designed to find each customer's first purchase from the time 
 * **WHERE order_rank = 1**: Filters the `member_sales` CTE to only include the first order (rank 1) for each customer since becoming a member.
 
 ***
+
+### 7. Which item was purchased just before the customer became a member?
+
+```sql
+WITH pre_membership_sales AS (
+    SELECT
+        customer_id,
+        product_name,
+        order_date,
+        join_date,
+        DENSE_RANK() OVER (PARTITION BY customer_id ORDER BY order_date DESC)
+            AS latest_order_rank
+    FROM sales
+    INNER JOIN menu USING(product_id)
+    INNER JOIN members USING(customer_id)
+    WHERE order_date < join_date
+)
+SELECT
+    customer_id,
+    STRING_AGG(product_name, ', '),
+    order_date,
+    join_date
+FROM pre_membership_sales
+WHERE latest_order_rank = 1
+GROUP BY customer_id, order_date, join_date;
+```
+
+#### Query Result
+| customer_id | product_name | order_date | join_date  |
+|-------------|--------------|------------|------------|
+| A           | sushi, curry | 2021-01-01 | 2021-01-07 |
+| B           | sushi        | 2021-01-04 | 2021-01-09 |
+
+
+#### Key Operations
+This query uses a structure similar to that of question 6 to identify each customer's last non-member order before joining the loyalty program.
+
+* **WITH pre_membership_sales AS**: Similar to the `member_sales` CTE in the previous query, `pre_membership_sales` constructs a temporary table. However, in this case, it captures orders placed by customers before their membership began. The orders are sorted in reverse chronological order (most recent first) for each customer.
+  * **WHERE order_date < join_date**: A key difference in this query lies in the WHERE clause: `WHERE order_date < join_date` selects sales transactions that occurred prior to the customer's membership start date.
+  * **DENSE_RANK() OVER (PARTITION BY customer_id ORDER BY order_date DESC) AS latest_order_rank**: Assigns a rank to each order for a customer, with the most recent order before joining the membership getting the rank of 1. This contrasts with the previous query, where the earliest order after joining received the rank 1.
+* **WHERE latest_order_rank = 1**: Isolates the last order of each customer before they became a member.
+* **GROUP BY customer_id, order_date, join_date**: Ensures that the data is organized in order to use the `STRING_AGG` function to combine all products ordered on the same day into a single row.
+
+***
+
