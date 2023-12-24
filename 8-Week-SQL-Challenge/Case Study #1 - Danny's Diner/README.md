@@ -352,3 +352,99 @@ This query uses a structure similar to that of question 6 to identify each custo
 
 ***
 
+### 8. What is the total items and amount spent for each member before they became a member?
+
+```sql
+SELECT
+    customer_id,
+    COUNT(*) AS item_count,
+    SUM(price) AS pre_member_total_spend
+FROM sales
+INNER JOIN members USING(customer_id)
+INNER JOIN menu USING(product_id)
+WHERE order_date < join_date
+GROUP BY customer_id
+ORDER BY customer_id;
+```
+
+| customer_id | item_count | pre_member_total_spend |
+|-------------|------------|------------------------|
+| A           | 2          | 25                     |
+| B           | 3          | 40                     |
+
+#### Key Operations
+This query calculates the total number of items purchased and the total amount spent by each customer before they became a member.
+
+* **INNER JOINs**:
+  * The query first joins the `sales` table with the `members` table on `customer_id`. This join links each sale to the corresponding customer's membership information.
+  * It then joins the `sales` table with the `menu` table on `product_id`. This second join brings in the price details for each product sold.
+* **WHERE order_date < join_date**: Filters the dataset to only include sales that occurred before a customer's membership start date (`join_date`).
+* **COUNT(*) AS item_count**: Counts the total number of items for each customer.
+* **SUM(price) AS pre_member_total_spend**: Calculates the total amount spent by each customer on these purchases. 
+* **GROUP BY customer_id**: Groups the results by `customer_id` to ensure that the item count and total spend calculations are specific to each individual customer.
+
+***
+
+### 9.
+
+```sql
+```
+
+#### Query Result
+
+#### Key Operations
+
+***
+
+### 9.
+
+```sql
+```
+
+#### Query Result
+
+#### Key Operations
+
+***
+
+### Bonus 1: Join All The Things
+
+Create a table with `customer_id`, `order_date`, `product_name`, `price`, and `member` columns, populating the `member` column with `N` for purchases made before becoming a member and `Y` for those made after joining the loyalty program.
+
+Example:
+
+| customer_id | order_date  | product_name | price | member |
+|-------------|-------------|--------------|-------|--------|
+| A           | 2021-01-01  | curry        | 15    | N      |
+| A           | 2021-01-01  | sushi        | 10    | N      |
+...
+
+```sql
+```
+
+#### Query Result
+
+#### Key Operations
+
+***
+
+### Bonus 2: Rank All The Things
+
+Danny also requires further information about the ranking of customer products, but he purposely does not need the ranking for non-member purchases so he expects null ranking values for the records when customers are not yet part of the loyalty program.
+
+Example:
+
+| customer_id | order_date | product_name | price | member | ranking |
+|-------------|------------|--------------|-------|--------|---------|
+| A           | 2021-01-01 | curry        | 15    | N      | null    |
+| A           | 2021-01-01 | sushi        | 10    | N      | null    |
+...
+
+```sql
+```
+
+#### Query Result
+
+#### Key Operations
+
+***
