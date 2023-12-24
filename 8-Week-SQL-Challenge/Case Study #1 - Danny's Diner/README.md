@@ -18,8 +18,8 @@
   - [Question 8](#8-what-is-the-total-items-and-amount-spent-for-each-member-before-they-became-a-member)
   - [Question 9](#q9)
   - [Question 10](#q10)
-  - [Bonus 1](#bonus-1-join-all-the-things)
-  - [Bonus 2](#bonus-2-rank-all-the-things)
+  - [Bonus Question 1](#bonus-1-join-all-the-things)
+  - [Bonus Question 2](#bonus-2-rank-all-the-things)
 
 
 Please note that all the details pertaining to the case study have been obtained from [Data with Danny](https://8weeksqlchallenge.com/case-study-1/). 
@@ -398,11 +398,7 @@ This query calculates the total number of items purchased and the total amount s
 
 ***
 
-<p align="center">
-  <div style="background-color: #0077B5; color: #FFFFFF; padding: 10px; text-align: center;">
-    <strong>The remaining questions are currently under development and will be added soon</strong>
-  </div>
-</p>
+> ## The remaining questions are currently under development and will be added soon</strong>
 
 ### 9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier, how many points would each customer have?<a name="q9"></a>
 
