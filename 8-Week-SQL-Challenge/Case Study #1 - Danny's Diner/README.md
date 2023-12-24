@@ -403,11 +403,42 @@ This query calculates the total number of items purchased and the total amount s
 ### 9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier, how many points would each customer have?<a name="q9"></a>
 
 ```sql
+WITH order_points AS (
+    SELECT
+        customer_id,
+        CASE
+            WHEN product_name = 'sushi' THEN price * 20
+            ELSE price * 10
+        END AS points
+    FROM sales
+    INNER JOIN menu USING(product_id)
+)
+SELECT
+    customer_id,
+    SUM(points) AS total_points
+FROM order_points
+GROUP BY customer_id
+ORDER BY customer_id;
 ```
 
 #### Query Result
 
+| customer_id | total_points |
+|-------------|--------------|
+| A           | 860          |
+| B           | 940          |
+| C           | 360          |
+
 #### Key Operations
+This query calculates total reward points for each customer based on their purchases, with a higher point value assigned to sushi orders.
+
+* **WITH order_points AS**: Creates a temporary table to calculate the points each customer earns from their purchases.
+  * **INNER JOIN** between the `sales` and `menu` tables on `product_id`: Links each sale with the corresponding product details.
+  * **CASE WHEN**: Applies conditional logic to calculate the points earned based on the type of product purchased.
+      - **If product_name = sushi**: For sushi, the query multiplies the price by 20, as each $1 spent on sushi earns 20 points.
+      - **Else (Other Products)**: For all other products, each $1 spent earns 10 points, resulting in the price being multiplied by 10.
+* **SUM(points) AS total_points**: Calculates the total points earned by each customer. 
+* **GROUP BY customer_id**: Groups the results by `customer_id` to ensure that the point calculations are specific to each customer.
 
 ***
 
