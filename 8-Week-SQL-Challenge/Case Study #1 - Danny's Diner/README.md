@@ -8,6 +8,19 @@
 - [Datasets](#datasets)
 - [Entity Relationship Diagram](#entity-relationship-diagram)
 - [Case Study Questions and Solutions](#case-study-questions-and-solutions)
+  - [Question 1](#1-what-is-the-total-amount-each-customer-spent-at-the-restaurant)
+  - [Question 2](#2-how-many-days-has-each-customer-visited-the-restaurant)
+  - [Question 3](#3-how-many-days-has-each-customer-visited-the-restaurant)
+  - [Question 4](#4-what-is-the-most-purchased-item-on-the-menu-and-how-many-times-was-it-purchased-by-all-customers)
+  - [Question 5](#5-which-item-was-the-most-popular-for-each-customer)
+  - [Question 6](#6-which-item-was-purchased-first-by-each-customer-after-they-became-a-member)
+  - [Question 7](#7-which-item-was-purchased-just-before-the-customer-became-a-member)
+  - [Question 8](#8-what-is-the-total-items-and-amount-spent-for-each-member-before-they-became-a-member)
+  - [Question 9](#q9)
+  - [Question 10](#q10)
+  - [Bonus 1](#bonus-1-join-all-the-things)
+  - [Bonus 2](#bonus-2-rank-all-the-things)
+
 
 Please note that all the details pertaining to the case study have been obtained from [Data with Danny](https://8weeksqlchallenge.com/case-study-1/). 
 
@@ -385,7 +398,13 @@ This query calculates the total number of items purchased and the total amount s
 
 ***
 
-### 9.
+<p align="center">
+  <div style="background-color: #0077B5; color: #FFFFFF; padding: 10px; text-align: center;">
+    <strong>The remaining questions are currently under development and will be added soon</strong>
+  </div>
+</p>
+
+### 9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier, how many points would each customer have?<a name="q9"></a>
 
 ```sql
 ```
@@ -396,7 +415,7 @@ This query calculates the total number of items purchased and the total amount s
 
 ***
 
-### 9.
+### 10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi. How many points do customer A and B have at the end of January?<a name="q10"></a>
 
 ```sql
 ```
@@ -446,5 +465,3 @@ Example:
 #### Query Result
 
 #### Key Operations
-
-***
