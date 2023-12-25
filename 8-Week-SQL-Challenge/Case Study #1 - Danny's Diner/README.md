@@ -398,8 +398,6 @@ This query calculates the total number of items purchased and the total amount s
 
 ***
 
-> ## The remaining questions are currently under development and will be added soon</strong>
-
 ### 9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier, how many points would each customer have?<a name="q9"></a>
 
 ```sql
@@ -445,13 +443,48 @@ This query calculates total reward points for each customer based on their purch
 ### 10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi. How many points do customer A and B have at the end of January?<a name="q10"></a>
 
 ```sql
+SELECT
+    customer_id,
+    SUM(CASE
+        -- Orders before joining yield no points
+        WHEN order_date < join_date THEN 0
+        
+        -- During the first week of membership, 2x points on all items
+        WHEN DATE(order_date) <= DATE(join_date) + INTERVAL '6 DAYS' THEN price * 20
+
+         -- After the first week, 2x points only on sushi 
+        WHEN (product_name = 'sushi') THEN price * 20
+      
+        -- Regular points for non-sushi items after the first week
+        ELSE price * 10
+    END) AS total_points
+FROM members
+INNER JOIN sales USING(customer_id)
+INNER JOIN menu USING(product_id)
+WHERE order_date <= '2021-01-31'
+GROUP BY customer_id
+ORDER BY customer_id ASC;
 ```
 
 #### Query Result
+| customer_id | total_points |
+|-------------|--------------|
+| A           | 1020         |
+| B           | 320          |
 
 #### Key Operations
+This query calculates the loyalty points earned by customers, taking into account membership status, a promotional period for new members, and type of product purchased.
+
+* **SELECT Clause with CASE Statement**: Computes the total points earned by each customer using a `SUM` function combined with a `CASE` statement.
+  * **Orders Before Membership**: If an order date is before the join date, no points are awarded (`WHEN order_date < join_date THEN 0`).
+  * **First Week of Membership**: During the first week after joining, customers earn double points (20 points per dollar spent) on all items: (`WHEN DATE(order_date) <= DATE(join_date) + INTERVAL '6 DAYS' THEN price * 20`). The interval `DATE(join_date) + INTERVAL '6 DAYS'` is used to define the first week because the range is inclusive of both the start and end dates. By adding 6 days, the total duration covers a 7-day period (the join date plus the subsequent 6 days).
+  * **Sushi After First Week**: After the first week of membership, only sushi orders continue to earn double points (`WHEN (product_name = 'sushi') THEN price * 20`).
+  * **Regular Points for Non-Sushi Items After First Week**: For non-sushi items after the first week of membership, the standard points rate (10 points per dollar) applies (`ELSE price * 10`).
+* **WHERE Clause**: Limits the data to orders placed on or before '2021-01-31' as required by the problem statement.
 
 ***
+> ## The remaining questions are currently under development and will be added soon
+
 
 ### Bonus 1: Join All The Things
 
@@ -470,7 +503,9 @@ Example:
 
 #### Query Result
 
+
 #### Key Operations
+
 
 ***
 
