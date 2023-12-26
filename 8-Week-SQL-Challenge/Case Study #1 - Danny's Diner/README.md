@@ -483,8 +483,6 @@ This query calculates the loyalty points earned by customers, taking into accoun
 * **WHERE Clause**: Limits the data to orders placed on or before '2021-01-31' as required by the problem statement.
 
 ***
-> ## The remaining questions are currently under development and will be added soon
-
 
 ### Bonus 1: Join All The Things
 
@@ -492,22 +490,60 @@ Create a table with `customer_id`, `order_date`, `product_name`, `price`, and `m
 
 Example:
 
-| customer_id | order_date  | product_name | price | member |
-|-------------|-------------|--------------|-------|--------|
-| A           | 2021-01-01  | curry        | 15    | N      |
-| A           | 2021-01-01  | sushi        | 10    | N      |
+| customer_id | order_date  | product_name | price | is_member |
+|-------------|-------------|--------------|-------|-----------|
+| A           | 2021-01-01  | sushi        | 10    | N         |
+| A           | 2021-01-01  | curry        | 15    | N         |
+
 ...
 
 ```sql
+SELECT
+    customer_id,
+    order_date,
+    product_name,
+    price,
+    CASE
+        WHEN order_date >= join_date THEN 'Y'
+        ELSE 'N'
+    END AS is_member
+FROM sales
+FULL OUTER JOIN members USING(customer_id)
+FULL OUTER JOIN menu USING(product_id)
+ORDER BY customer_id, order_date ASC;
 ```
 
 #### Query Result
-
+| customer_id | order_date | product_name | price | is_member |
+|-------------|------------|--------------|-------|-----------|
+| A           | 2021-01-01 | sushi        | 10    | N         |
+| A           | 2021-01-01 | curry        | 15    | N         |
+| A           | 2021-01-07 | curry        | 15    | Y         |
+| A           | 2021-01-10 | ramen        | 12    | Y         |
+| A           | 2021-01-11 | ramen        | 12    | Y         |
+| A           | 2021-01-11 | ramen        | 12    | Y         |
+| B           | 2021-01-01 | curry        | 15    | N         |
+| B           | 2021-01-02 | curry        | 15    | N         |
+| B           | 2021-01-04 | sushi        | 10    | N         |
+| B           | 2021-01-11 | sushi        | 10    | Y         |
+| B           | 2021-01-16 | ramen        | 12    | Y         |
+| B           | 2021-02-01 | ramen        | 12    | Y         |
+| C           | 2021-01-01 | ramen        | 12    | N         |
+| C           | 2021-01-01 | ramen        | 12    | N         |
+| C           | 2021-01-07 | ramen        | 12    | N         |
 
 #### Key Operations
+This query provides detailed sales information for each transaction and indicates the membership status of the customer at the time of the sale.
 
+**CASE Statement**: Determines if the purchase was made during the customer's membership period. If the `order_date` is on or after the `join_date`, `is_member` is set to 'Y' (Yes). Otherwise, it's set to 'N' (No).
+  * In cases where `join_date` is null (as will be the case for non-member customers like customer C), the query still functions correctly. If `join_date` is null, the condition `order_date >= join_date` will not be true, and, thus, the `is_member` field will be correctly set to `'N'`. 
+* **FULL OUTER JOINs**:
+  * **members USING(customer_id)**: Links the `sales` table with the `members` table to include the `join_date` for each customer. A `FULL OUTER JOIN` ensures that all records from both tables are included, even if there is no corresponding match in the other table as occurs for non-member customer C.
+  * **menu USING(product_id)**: Brings in the `product_name` and `price` for each sale.
 
 ***
+
+> ## The remaining questions are currently under development and will be added soon
 
 ### Bonus 2: Rank All The Things
 
