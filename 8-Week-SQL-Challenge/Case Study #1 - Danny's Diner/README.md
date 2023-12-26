@@ -546,7 +546,7 @@ This query provides detailed sales information for each transaction and indicate
 
 ### Bonus 2: Rank All The Things
 
-Danny also requires further information about the ranking of customer products, but he purposely does not need the ranking for non-member purchases so he expects null ranking values for the records when customers are not yet part of the loyalty program.
+Danny also requires further information about the ranking of customer products based on order date. However, he does not need the ranking for non-member purchases so he expects null ranking values for the records when customers are not yet part of the loyalty program.
 
 Example:
 
@@ -554,6 +554,7 @@ Example:
 |-------------|------------|--------------|-------|--------|---------|
 | A           | 2021-01-01 | curry        | 15    | N      | null    |
 | A           | 2021-01-01 | sushi        | 10    | N      | null    |
+| A           | 2021-01-07 | curry        | 15    | Y      | 1       |
 ...
 
 ```sql
