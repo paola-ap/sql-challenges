@@ -542,24 +542,75 @@ This query provides detailed sales information for each transaction and indicate
 
 ***
 
-> ## The remaining questions are currently under development and will be added soon
-
 ### Bonus 2: Rank All The Things
 
 Danny also requires further information about the ranking of customer products based on order date. However, he does not need the ranking for non-member purchases so he expects null ranking values for the records when customers are not yet part of the loyalty program.
 
 Example:
 
-| customer_id | order_date | product_name | price | member | ranking |
-|-------------|------------|--------------|-------|--------|---------|
-| A           | 2021-01-01 | curry        | 15    | N      | null    |
-| A           | 2021-01-01 | sushi        | 10    | N      | null    |
-| A           | 2021-01-07 | curry        | 15    | Y      | 1       |
+| customer_id | order_date | product_name | price | is_member | ranking |
+|-------------|------------|--------------|-------|-----------|---------|
+| A           | 2021-01-01 | curry        | 15    | N         | null    |
+| A           | 2021-01-01 | sushi        | 10    | N         | null    |
+| A           | 2021-01-07 | curry        | 15    | Y         | 1       |
 ...
 
 ```sql
+WITH full_sales AS (
+    SELECT
+        customer_id,
+        order_date,
+        product_name,
+        price,
+        CASE
+            WHEN order_date >= join_date THEN 'Y'
+            ELSE 'N'
+        END AS is_member
+    FROM sales
+    FULL OUTER JOIN members USING(customer_id)
+    FULL OUTER JOIN menu USING(product_id)
+)
+SELECT 
+    customer_id,
+    order_date,
+    product_name,
+    price,
+    is_member,
+    CASE
+       WHEN is_member = 'N' THEN null
+       ELSE DENSE_RANK() OVER(PARTITION BY customer_id, is_member ORDER BY order_date)
+    END AS ranking
+FROM full_sales
+ORDER BY customer_id, order_date ASC;
 ```
 
 #### Query Result
+| customer_id | order_date | product_name | price | is_member | ranking |
+|-------------|------------|--------------|-------|-----------|---------|
+| A           | 2021-01-01 | sushi        | 10    | N         | [null]  |
+| A           | 2021-01-01 | curry        | 15    | N         | [null]  |
+| A           | 2021-01-07 | curry        | 15    | Y         | 1       |
+| A           | 2021-01-10 | ramen        | 12    | Y         | 2       |
+| A           | 2021-01-11 | ramen        | 12    | Y         | 3       |
+| A           | 2021-01-11 | ramen        | 12    | Y         | 3       |
+| B           | 2021-01-01 | curry        | 15    | N         | [null]  |
+| B           | 2021-01-02 | curry        | 15    | N         | [null]  |
+| B           | 2021-01-04 | sushi        | 10    | N         | [null]  |
+| B           | 2021-01-11 | sushi        | 10    | Y         | 1       |
+| B           | 2021-01-16 | ramen        | 12    | Y         | 2       |
+| B           | 2021-02-01 | ramen        | 12    | Y         | 3       |
+| C           | 2021-01-01 | ramen        | 12    | N         | [null]  |
+| C           | 2021-01-01 | ramen        | 12    | N         | [null]  |
+| C           | 2021-01-07 | ramen        | 12    | N         | [null]  |
 
 #### Key Operations
+This query extends the sales data to include a ranking for each order placed by members, based on the order date.
+
+* **WITH full_sales AS**: This Common Table Expression (CTE) is the same as in the first bonus question. It creates a unified table by combining the `sales`, `members`, and `menu` tables. It also adds a column `is_member` to indicate whether the customer was a member at the time of purchase.
+* **SELECT Clause with DENSE_RANK Function**: Applies a conditional `CASE` statement in conjunction with `DENSE_RANK()`.
+  * **Non-Member Orders**: If `is_member` is 'N', indicating that the customer was not a member at the time of the order, the `ranking` is set to NULL.
+  * **Member Orders**: When `is_member` is 'Y', we use `DENSE_RANK()` to rank the orders for each customer.
+    * The ranking is determined based on the `order_date`, with earlier dates getting lower ranks.
+    * The ranking is calculated using `PARTITION BY customer_id, is_member`. This partitioning ensures that each customer's orders are ranked separately, and only within the context of their membership status. It creates distinct ranking sequences for each customer as a member.
+    * It is important to note that the ranking must be partitioned by `is_member` (as well as `customer_id`) because although non-member orders do not receive a rank due to the CASE statement, they are still considered in the ranking sequence. This means that if a customer has non-member orders before becoming a member, the ranking for their member orders will start after accounting for these initial orders. For example, since the first two orders on January 1st, 2021 were made before customer A became a member, if we do not partition by `is_member`, the first member order on January 7th will be ranked as 2, acknowledging the total order history.
+   
