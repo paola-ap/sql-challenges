@@ -535,7 +535,7 @@ ORDER BY customer_id, order_date ASC;
 #### Key Operations
 This query provides detailed sales information for each transaction and indicates the membership status of the customer at the time of the sale.
 
-**CASE Statement**: Determines if the purchase was made during the customer's membership period. If the `order_date` is on or after the `join_date`, `is_member` is set to 'Y' (Yes). Otherwise, it's set to 'N' (No).
+* **SELECT Clause with CASE Statement**: Determines if the purchase was made during the customer's membership period. If the `order_date` is on or after the `join_date`, `is_member` is set to 'Y' (Yes). Otherwise, it's set to 'N' (No).
   * In cases where `join_date` is null (as will be the case for non-member customers like customer C), the query still functions correctly. If `join_date` is null, the condition `order_date >= join_date` will not be true, and, thus, the `is_member` field will be correctly set to `'N'`. 
 * **FULL OUTER JOINs**:
   * **members USING(customer_id)**: Links the `sales` table with the `members` table to include the `join_date` for each customer. A `FULL OUTER JOIN` ensures that all records from both tables are included, even if there is no corresponding match in the other table as occurs for non-member customer C.
