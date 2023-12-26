@@ -1,8 +1,8 @@
+> ## This case study is currently under development and will be updated soon
+
 # Case Study #2 - Pizza Runner
 <p align="center">
 <img src="https://user-images.githubusercontent.com/81607668/127271856-3c0d5b4a-baab-472c-9e24-3c1e3c3359b2.png" alt="Image" width="450" height="450">
-
-> ## This case study is currently under development and will be updated soon
 
 ## Table of Contents
 - [Tools](#tools)
@@ -29,6 +29,8 @@ Please note that all the details pertaining to the case study have been obtained
 Danny, in his new venture, Pizza Runner, requires assistance in managing and optimizing his pizza delivery service. Leveraging data to track runner performance, customer preferences, and sales trends is key to growing his business.
 
 ## Datasets
+
+All datasets exist within the pizza_runner database schema.
 
 <details><summary>Customer Orders</summary>
 Customer pizza orders are captured in the `customer_orders` table with 1 row for each individual pizza that is part of the order.
