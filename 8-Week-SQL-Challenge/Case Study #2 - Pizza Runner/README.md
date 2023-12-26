@@ -32,7 +32,7 @@ Danny, in his new venture, Pizza Runner, requires assistance in managing and opt
 
 All datasets exist within the pizza_runner database schema.
 
-<details><summary>Customer Orders</summary>
+<details><summary>customer_orders</summary>
 Customer pizza orders are captured in the `customer_orders` table with 1 row for each individual pizza that is part of the order.
 
 * The `pizza_id` relates to the type of pizza which was ordered whilst the `exclusions` are the `ingredient_id` values which should be removed from the pizza and the `extras` are the `ingredient_id` values which need to be added to the pizza.
@@ -57,7 +57,7 @@ Customer pizza orders are captured in the `customer_orders` table with 1 row for
 | 10       | 104         | 1        | 2, 6       | 1, 4   | 2021-01-11 18:34:49 |
 </details>
 
-<details><summary>Runner Orders</summary>
+<details><summary>runner_orders</summary>
 
 After each orders are received through the system - they are assigned to a runner - however not all orders are fully completed and can be cancelled by the restaurant or the customer.
 
@@ -79,7 +79,7 @@ There are some known data issues with this table so be careful when using this i
 | 10       | 1         | 2020-01-11 18:50:20 | 10km     | 10minutes  | null                    |
 </details>
 
-<details><summary>Runners</summary>
+<details><summary>runners</summary>
   
 | runner_id | registration_date |
 |-----------|-------------------|
@@ -89,7 +89,7 @@ There are some known data issues with this table so be careful when using this i
 | 4         | 2021-01-15        |
 </details>
 
-<details><summary>Pizza Names</summary>
+<details><summary>pizza_names</summary>
 
 | pizza_id | pizza_name   |
 |----------|--------------|
@@ -97,7 +97,7 @@ There are some known data issues with this table so be careful when using this i
 | 2        | Vegetarian   |
 </details>
 
-<details><summary>Pizza Recipes</summary>
+<details><summary>pizza_recipes</summary>
 
 | pizza_id | toppings                |
 |----------|-------------------------|
@@ -105,7 +105,7 @@ There are some known data issues with this table so be careful when using this i
 | 2        | 4, 6, 7, 9, 11, 12      |
 </details>
 
-<details><summary>Pizza Toppings</summary>
+<details><summary>pizza_toppings</summary>
 
 | topping_id | topping_name |
 |------------|--------------|
