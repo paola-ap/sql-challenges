@@ -149,32 +149,29 @@ This query calculates the number of distinct visits per customer by counting the
 
 ***
 
-### 3. How many days has each customer visited the restaurant?
+### 3. What was the first item from the menu purchased by each customer?
 
 ```sql
--- First aggregate products by customer and order date
-WITH product_orders AS (
+-- Aggregate products by customer and order date, and rank by order date
+WITH aggregated_orders AS (
     SELECT
         customer_id,
+        STRING_AGG(product_name, ', ') AS product_names,
         order_date,
-        STRING_AGG(product_name, ', ') AS products_ordered
+        DENSE_RANK() OVER (
+            PARTITION BY customer_id
+            ORDER BY order_date ASC) AS sales_order
     FROM sales
     INNER JOIN menu USING(product_id)
     GROUP BY customer_id, order_date
 )
--- Filter orders by earliest order date
+-- Select first order date based on ranking in CTE
 SELECT
     customer_id,
     order_date AS earliest_order_date,
-    products_ordered
-FROM product_orders
-WHERE (customer_id, order_date) IN (
-    SELECT
-        customer_id,
-        MIN(order_date)
-    FROM product_orders
-    GROUP BY customer_id
-)
+    product_names
+FROM aggregated_orders
+WHERE sales_order = 1
 ORDER BY customer_id ASC;
 ```
 #### Query Result
@@ -188,11 +185,12 @@ ORDER BY customer_id ASC;
 #### Key Operations
 This query identifies the first set of products ordered by each customer along with the date of these initial orders.
 
-* **WITH product_orders**: This Common Table Expression (CTE) is used as a temporary result set for further processing. It aggregates products ordered by customers on each order date.
+* **WITH aggregated_orders**: This Common Table Expression (CTE) is used as a temporary result set for further processing. It aggregates products ordered by customers on each order date.
   * **INNER JOIN**: Pairs each sale with its respective product name.
-  * **STRING_AGG(product_name, ', ')**: Concatenates the names of products ordered into a single string, separated by commas, for each order. We aggregate the products because at times multiple products were purchased on the same day, and we are not provided timestamps to determine the order of the sales.
+  * **STRING_AGG(product_name, ', ')**: Concatenates the names of products ordered into a single string, separated by commas, for each order. We aggregate the products because multiple products were often purchased on the same day, and we are not provided with timestamps to determine the order of those same-day sales.
   * **GROUP BY customer_id, order_date**: Organizes the data into groups for each combination of customer and order date to facilitate aggregation of product names.
-* **WHERE** Clause with Subquery: Filters the records to only include the earliest order for each customer. This is done using a subquery that selects the minimum `order_date` for each `customer_id` from the `product_orders` CTE.
+  *  **DENSE_RANK() OVER (PARTITION BY customer_id ORDER BY order_date ASC) AS order_rank**: Assigns a rank to each food order for a customer, based on the order date, with the earliest order getting the rank 1. The `PARTITION BY` clause ensures that this ranking is done separately for each customer.
+* **WHERE sales_order = 1**: Filters the `member_sales` CTE to only include the first order (rank 1) for each customer.
 
 ***
 
