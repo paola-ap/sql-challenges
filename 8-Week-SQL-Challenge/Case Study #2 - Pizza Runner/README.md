@@ -44,7 +44,7 @@ Customer pizza orders are captured in the `customer_orders` table with 1 row for
 | 1        | 101         | 1        |            |        | 2021-01-01 18:05:02 |
 | 2        | 101         | 1        |            |        | 2021-01-01 19:00:52 |
 | 3        | 102         | 1        |            |        | 2021-01-02 23:51:23 |
-| 3        | 102         | 2        |            | NaN    | 2021-01-02 23:51:23 |
+| 3        | 102         | 2        |            | NULL   | 2021-01-02 23:51:23 |
 | 4        | 103         | 1        | 4          |        | 2021-01-04 13:23:46 |
 | 4        | 103         | 1        | 4          |        | 2021-01-04 13:23:46 |
 | 4        | 103         | 2        | 4          |        | 2021-01-04 13:23:46 |
@@ -132,8 +132,81 @@ There are some known data issues with this table so be careful when using this i
 ***
 
 ## Data Cleaning & Transformation<a name="data-cleaning"></a>
+### customer_orders
+
+The `exclusions` and `extras` columns within the `customer_orders` table need to be cleaned. We can observe that there isn't a consistent method to denote orders without either exclusions or extras.
+
+In order to preserve the original table, we will create a new temporary table for the following data manipulation:
+* Standardize the data in the `exclusions` and `extras` columns by converting both true NULL values and literal 'null' strings to empty strings (''). We take the empty string to mean that customers have consciously decided against adding or removing toppings, reserving `NULL` for cases of unknown customer selections. Note that for real world applications it is important for the choice of `NULL` or empty string to align with other company or project databases and standards.
+
+```sql
+DROP TABLE IF EXISTS temp_customer_orders;
+CREATE TEMPORARY TABLE temp_customer_orders AS
+    SELECT
+        order_id,
+        customer_id,
+        pizza_id,
+        CASE
+            WHEN exclusions = 'null' OR exclusions IS NULL THEN ''
+            ELSE exclusions
+        END AS exclusions,
+        CASE
+            WHEN extras = 'null' OR extras IS NULL THEN ''
+            ELSE extras
+        END AS extras,
+    order_time
+FROM customer_orders;
+```
+#### Table Result
+
+| order_id | customer_id | pizza_id | exclusions | extras | order_time          |
+|----------|-------------|----------|------------|--------|---------------------|
+| 1        | 101         | 1        |            |        | 2021-01-01 18:05:02 |
+| 2        | 101         | 1        |            |        | 2021-01-01 19:00:52 |
+| 3        | 102         | 1        |            |        | 2021-01-02 23:51:23 |
+| 3        | 102         | 2        |            |        | 2021-01-02 23:51:23 |
+| 4        | 103         | 1        | 4          |        | 2021-01-04 13:23:46 |
+| 4        | 103         | 1        | 4          |        | 2021-01-04 13:23:46 |
+| 4        | 103         | 2        | 4          |        | 2021-01-04 13:23:46 |
+| 5        | 104         | 1        |            | 1      | 2021-01-08 21:00:29 |
+| 6        | 101         | 2        |            |        | 2021-01-08 21:03:13 |
+| 7        | 105         | 2        |            | 1      | 2021-01-08 21:20:29 |
+| 8        | 102         | 1        |            |        | 2021-01-09 23:54:33 |
+| 9        | 103         | 1        | 4          | 1, 5   | 2021-01-10 11:22:59 |
+| 10       | 104         | 1        |            |        | 2021-01-11 18:34:49 |
+| 10       | 104         | 1        | 2, 6       | 1, 4   | 2021-01-11 18:34:49 |
+
+#### Key Operations
+This query creates (or replaces if already existing) a temporary table named `temp_customer_orders` with cleaned data from the original `customer_orders` table.
+
+* **DROP TABLE IF EXISTS temp_customer_orders**: Drops the existing `temp_customer_orders` table if it already exists to avoid conflicts.
+*  **CREATE TEMPORARY TABLE temp_customer_orders AS**: Creates a new temporary table that holds data for the session's duration.
+  * **CASE WHEN exclusions = 'null' OR exclusions IS NULL THEN '' ELSE exclusions END AS exclusions**: This statement transforms the `exclusions` field by replacing NULL or 'null' string values with an empty string.
+  * **CASE WHEN extras = 'null' OR extras IS NULL THEN '' ELSE extras END AS extras**: Performs the same operation as described above, but on the `extras` column.
 
 ***
+
+### runner_orders
+
+The `distance`, `duration`, and `cancellation` columns within the `runner_orders` table need to be cleaned. We observe the following issues:
+1. The `distance` fields display units inconsistently; moreover, among those fields that include units, the format is not standardized. For example, '25km' lacks a space between the number and the unit, whereas '23.4 km' includes one.
+2. Within the `duration` column, there is also a discrepancy in unit notation (e.g. '32 minutes, 20  mins, 25mins, 15).
+3. There is an inconsistent way to mark 'no cancellations' within the `cancellations` column (e.g. 'NaN', 'null'', '', NULL).
+4. Overall, there isn't a standardized way to signify 'not  applicable' or 'not selected' as we previously saw in the `customer_orders` table.
+
+In order to preserve the original table, we will create a new temporary table for the following data manipulation:
+*
+
+```sql
+
+```
+
+#### Table Result
+
+
+
+#### Key Operations
+
 
 ## Case Study Questions and Solutions
 - [Part A. Pizza Metrics](#a-pizza-metrics)
