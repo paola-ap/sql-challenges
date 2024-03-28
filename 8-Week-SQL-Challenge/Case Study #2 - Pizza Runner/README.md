@@ -136,8 +136,10 @@ There are some known data issues with this table so be careful when using this i
 
 The `exclusions` and `extras` columns within the `customer_orders` table need to be cleaned. We can observe that there isn't a consistent method to denote orders without either exclusions or extras.
 
-In order to preserve the original table, we will create a new temporary table for the following data manipulation:
-* Standardize the data in the `exclusions` and `extras` columns by converting both true NULL values and literal 'null' strings to empty strings (''). We take the empty string to mean that customers have consciously decided against adding or removing toppings, reserving `NULL` for cases of unknown customer selections. Note that for real world applications it is important for the choice of `NULL` or empty string to align with other company or project databases and standards.
+In this business context, it's expected and understood that customers who choose not to add or remove toppings will leave those fields blank. Given that this is a deliberate decision, we will capture this using empty strings (''), thus allowing us to reserve `NULL` for cases where the data is genuinely unknown. Note that for real world applications it is important for the choice of `NULL` or empty string to align with other company or project databases and standards.
+
+Following this rationale, and to preserve the original table, we will create a new temporary table for the following data manipulation:
+* Standardize the data in the `exclusions` and `extras` columns by converting both true NULL values and literal 'null' strings to empty strings (''). 
 
 ```sql
 DROP TABLE IF EXISTS temp_customer_orders;
@@ -188,14 +190,16 @@ This query creates (or replaces if already existing) a temporary table named `te
 
 ### runner_orders
 
-The `distance`, `duration`, and `cancellation` columns within the `runner_orders` table need to be cleaned. We observe the following issues:
+The `distance`, `duration`, `pickup_time` and `cancellation` columns within the `runner_orders` table need to be cleaned. We observe the following issues:
 1. The `distance` fields display units inconsistently; moreover, among those fields that include units, the format is not standardized. For example, '25km' lacks a space between the number and the unit, whereas '23.4 km' includes one.
-2. Within the `duration` column, there is also a discrepancy in unit notation (e.g. '32 minutes, 20  mins, 25mins, 15).
-3. There is an inconsistent way to mark 'no cancellations' within the `cancellations` column (e.g. 'NaN', 'null'', '', NULL).
-4. Overall, there isn't a standardized way to signify 'not  applicable' or 'not selected' as we previously saw in the `customer_orders` table.
+2. There is also a discrepancy in unit notation (e.g. '32 minutes, 20  mins, 25mins, 15) in the `duration` column.
+3. There is an inconsistent way to mark 'not applicable' or 'not selected' within various columns (e.g. 'NaN', 'null'', '', `NULL`) as was observed in the `customer_orders` table.
+4. The `distance`, `pickup_time` and `duration` fields should use float, datetime, and integer datatypes.
 
 In order to preserve the original table, we will create a new temporary table for the following data manipulation:
-*
+* In the `distance`, `duration`, and `pickup_time`, we will convert 
+* Standardize 'no selection' or 'not appliable' inputs by converting both true NULL values and literal 'null' strings to empty strings ('').
+* Remove all units and convert numerical fields to the appropriate data types.
 
 ```sql
 
