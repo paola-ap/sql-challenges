@@ -193,13 +193,15 @@ This query creates (or replaces if already existing) a temporary table named `te
 The `distance`, `duration`, `pickup_time` and `cancellation` columns within the `runner_orders` table need to be cleaned. We observe the following issues:
 1. The `distance` fields display units inconsistently; moreover, among those fields that include units, the format is not standardized. For example, '25km' lacks a space between the number and the unit, whereas '23.4 km' includes one.
 2. There is also a discrepancy in unit notation (e.g. '32 minutes, 20  mins, 25mins, 15) in the `duration` column.
-3. There is an inconsistent way to mark 'not applicable' or 'not selected' within various columns (e.g. 'NaN', 'null'', '', `NULL`) as was observed in the `customer_orders` table.
+3. There is an inconsistent way to mark 'not applicable' or 'not selected' within various columns (e.g. 'null'', '', `NULL`).
 4. The `distance`, `pickup_time` and `duration` fields should use float, datetime, and integer datatypes.
 
 In order to preserve the original table, we will create a new temporary table for the following data manipulation:
-* In the `distance`, `duration`, and `pickup_time`, we will convert 
-* Standardize 'no selection' or 'not appliable' inputs by converting both true NULL values and literal 'null' strings to empty strings ('').
-* Remove all units and convert numerical fields to the appropriate data types.
+* We will convert true `NULL` and the string literal 'null' to the empty string. This decision is driven by the following:
+ * In the `cancellation` column, a 'null' or `NULL` value is clearly meant to signify that a cancellation did not occur rather than missing or unknown data.
+ * For `pickup_time`, `duration`, and `distance` columns, the NULL values indicate non-applicable information due to order cancellations. By our logic, these fields could be  represented by either empty strings or `NULL` values, however, to simplify data handling and given that there isn't a clear advantage to creating a `NULL` state, we still opt for the empty string.
+* Remove all units.
+* Convert numerical fields to the appropriate data types.
 
 ```sql
 
