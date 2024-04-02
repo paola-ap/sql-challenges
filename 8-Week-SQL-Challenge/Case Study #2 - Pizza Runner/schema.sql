@@ -1,10 +1,11 @@
-/*
- * This code is a copy of material provided in Data with Danny's 8 Week SQL Challenge.
- * Original material can be found at https://8weeksqlchallenge.com/
- *
- * The use of this material is for educational purposes only.
- * All rights to the original content belong to Danny Ma.
- */
+/******************************************************************
+** Data with Danny's 8 Week SQL Challenge - Pizza Runner
+** This code is a copy of material provided in Data with Danny's 8 Week SQL Challenge.
+** Original material can be found at https://8weeksqlchallenge.com/
+**
+** The use of this material is for educational purposes only.
+** All rights to the original content belong to Danny Ma.
+******************************************************************/
 
 CREATE SCHEMA pizza_runner;
 SET search_path = pizza_runner;
