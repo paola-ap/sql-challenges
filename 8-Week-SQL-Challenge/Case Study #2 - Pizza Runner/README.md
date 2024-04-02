@@ -197,22 +197,60 @@ The `distance`, `duration`, `pickup_time` and `cancellation` columns within the 
 4. The `distance`, `pickup_time` and `duration` fields should use float, datetime, and integer datatypes.
 
 In order to preserve the original table, we will create a new temporary table for the following data manipulation:
-* We will convert true `NULL` and the string literal 'null' to the empty string. This decision is driven by the following:
- * In the `cancellation` column, a 'null' or `NULL` value is clearly meant to signify that a cancellation did not occur rather than missing or unknown data.
- * For `pickup_time`, `duration`, and `distance` columns, the NULL values indicate non-applicable information due to order cancellations. By our logic, these fields could be  represented by either empty strings or `NULL` values, however, to simplify data handling and given that there isn't a clear advantage to creating a `NULL` state, we still opt for the empty string.
+* For the `cancellation` column, we will continue to convert both true NULL values and the string literal 'null' into empty strings. This is because NULL in this context is clearly meant to signify that a cancellation did not occur rather than missing or unknown data.
+* Contrary to our previous approach, for the `pickup_time`, `duration`, and `distance` columns, the NULL values indicate non-applicable information due to order cancellations. This information is truly absent and, thus, the use of `NULL` is appropriate.
 * Remove all units.
 * Convert numerical fields to the appropriate data types.
 
 ```sql
-
+DROP TABLE IF EXISTS temp_runner_orders;
+CREATE TEMPORARY TABLE temp_runner_orders AS
+    SELECT
+        order_id,
+        runner_id,
+        CASE
+            WHEN pickup_time = 'null' THEN NULL
+            ELSE pickup_time::TIMESTAMP
+        END AS pickup_time,
+        CASE
+            WHEN distance = 'null' THEN NULL
+            ELSE regexp_replace(distance, '[^0-9.]', '', 'g')::FLOAT
+        END AS distance,
+        CASE
+            WHEN duration = 'null' THEN NULL
+            ELSE regexp_replace(duration, '[^0-9.]', '', 'g')::INTEGER
+        END AS duration,
+        CASE
+            WHEN cancellation = 'null' OR cancellation IS NULL THEN ''
+            ELSE cancellation
+        END AS cancellation
+FROM runner_orders;
 ```
 
 #### Table Result
 
-
+| order_id | runner_id | pickup_time         | distance | duration | cancellation            |
+|----------|-----------|---------------------|----------|----------|-------------------------|
+| 1        | 1         | 2020-01-01 18:15:34 | 20       | 32       |                         |
+| 2        | 1         | 2020-01-01 19:10:54 | 20       | 27       |                         |
+| 3        | 1         | 2020-01-03 00:12:37 | 13.4     | 20       |                         |
+| 4        | 2         | 2020-01-04 13:53:03 | 23.4     | 40       |                         |
+| 5        | 3         | 2020-01-08 21:10:57 | 10       | 15       |                         |
+| 6        | 3         | *[null]*            | *[null]* | *[null]* | Restaurant Cancellation |
+| 7        | 2         | 2020-01-08 21:30:45 | 25       | 25       |                         |
+| 8        | 2         | 2020-01-10 00:15:02 | 23.4     | 15       |                         |
+| 9        | 2         | *[null]*            | *[null]* | *[null]* | Customer Cancellation   |
+| 10       | 1         | 2020-01-11 18:50:20 | 10       | 10       |                         |
 
 #### Key Operations
+This query creates (or replaces if already existing) a temporary table named `temp_runner_orders` with cleaned data from the original `runner_orders` table. Most operations were already explained as a part of the `temp_customer_orders` table with a few exceptions:
 
+* **regexp_replace(distance, '[^0-9.]', '', 'g')**: To remove the units from the `duration` and `distance` fields, we use a regular expression to replace any character that is not a digit ('0-9') or a decimal point ('.') with an empty string.
+  * The `[^...]` pattern denotes a negated character class (enclosed in square brackets `[]`), which is used to match any character that is not specified within the brackets. It means "match anything that is not in this set."
+    * `0-9` represents any digit (0-9).
+    * `.` represents the literal decimal point.
+  * The flag `'g'` at the end of the function specifies a global search and replace, meaning it doesn't stop at the first match but continues to replace all instances throughout the string.
+* **::TIMESTAMP**: We use the PostgreSQL cast operator (`::`) to cast `pickup_time` to a timestamp. We follow a similar process to update the data types of the `distance` and `duration` columns.
 
 ## Case Study Questions and Solutions
 - [Part A. Pizza Metrics](#a-pizza-metrics)
